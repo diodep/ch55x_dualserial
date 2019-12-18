@@ -1160,7 +1160,47 @@ ISR_End_1:
 
 //#define FAST_COPY_2
 //#define FAST_COPY_1
+void CLKO_Enable(void) //打开T2输出
+{
+	#if 0
+	ET2 = 0;
+	T2CON = 0;
+	T2MOD = 0;
+	T2MOD |= bTMR_CLK | bT2_CLK | T2OE;
+	RCAP2H = 0xff;
+	RCAP2L = 0xfe;
+	TH2 = 0xff;
+	TL2 = 0xfe;
+	TR2 = 1;
 
+	P1_MOD_OC &= ~(0x01 << 4); //P1.4推挽输出
+	P1_DIR_PU |= (0x01 << 4);
+
+	P3_MOD_OC &= ~(0x01 << 2); //P3.2高阻
+	P3_DIR_PU &= ~(0x01 << 2); 
+
+	P3_MOD_OC &= ~(0x01 << 5); //P1.4高阻
+	P3_DIR_PU &= ~(0x01 << 5); 
+
+	PIN_FUNC |= bT2_PIN_X;
+	#endif
+	P3_MOD_OC &= ~(0x01 << 3);
+	P3_DIR_PU &= ~(0x01 << 3); 
+	P3_MOD_OC &= ~(0x01 << 5);
+	P3_DIR_PU &= ~(0x01 << 5);
+
+	P3_MOD_OC &= ~(0x01 << 4); //P3.4推挽输出
+	P3_DIR_PU |= (0x01 << 4);
+
+	PWM_CK_SE = 1;
+	PWM_CTRL |= bPWM_CLR_ALL;
+	PWM_CTRL &= ~bPWM_CLR_ALL;
+
+	PIN_FUNC &= ~bPWM2_PIN_X;
+	PWM_DATA2 = 128;
+	PWM_CTRL |= bPWM2_OUT_EN;
+	
+}
 //主函数
 main()
 {
@@ -1182,7 +1222,7 @@ main()
 	UEP0_T_LEN = 0;
 	UEP1_T_LEN = 0;													   //预使用发送长度一定要清空
 	UEP2_T_LEN = 0;													   //预使用发送长度一定要清空
-
+	CLKO_Enable();
 	/* 预先填充 Modem Status */
 	Ep1Buffer[0] = 0x01;
 	Ep1Buffer[1] = 0x60;
