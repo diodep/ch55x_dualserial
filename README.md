@@ -12,7 +12,7 @@ Baudrate range: 1200bps - 1.5Mbps
 
 USB endpoints are not configured as ping-pong mode, it makes it even slower. The real performance of this dongle is about 978Kbps, measured by esptool.
 
-This usb to serial converter does not contains any hardware flow control featire and it can only works with 8N1 line coding.
+This usb to serial converter does not contains any hardware flow control feature and it can only works with 8N1 line coding.
 
 Warning: High baudrate is not accurate at all, 115200 is the last traditional baudrate that it supports. For higher baudrate, please use 250Kbps, 500Kbps, 750Kbps.
 
