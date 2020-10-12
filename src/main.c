@@ -13,6 +13,10 @@
 #include <ch554_usb.h>
 #include <debug.h>
 
+/*
+ * use timer increase the SOF_Count every 1ms
+ * If you doesn't like this feature, define SOF_NO_TIMER
+ */
 //#define SOF_NO_TIMER
 
 /*
