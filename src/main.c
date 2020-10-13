@@ -14,8 +14,11 @@
 #include <debug.h>
 
 /*
- * use timer increase the SOF_Count every 1ms
+ * Use T0 to count the SOF_Count every 1ms
  * If you doesn't like this feature, define SOF_NO_TIMER
+ * Background: The usb host must to send SOF every 1ms, but some USB host don't really do that
+ * FTDI's driver has some bug, if it doesn't received empty packet with modem status,
+ * it will causes BSoD, so highly recommended use T0 instead of SOF packet to generate empty packet report.
  */
 //#define SOF_NO_TIMER
 
@@ -267,7 +270,6 @@ void DeviceInterrupt(void) __interrupt (INT_NO_USB)					   //USB中断服务程�
 	{
 #ifdef SOF_NO_TIMER
 		SOF_Count ++;
-#endif /* SOF_NO_TIMER */
 		if(Modem_Count)
 			Modem_Count --;
         if(Modem_Count == 1)
@@ -289,6 +291,7 @@ void DeviceInterrupt(void) __interrupt (INT_NO_USB)					   //USB中断服务程�
 				INTF1_RTS = 1;
 			}
 		}
+#endif /* SOF_NO_TIMER */
 	}
 	if(UIF_TRANSFER)															//USB传输完成标志
 	{
@@ -1397,8 +1400,29 @@ void CAP1Init(uint8_t mode)
 *******************************************************************************/
 void mTimer0Interrupt(void) __interrupt (INT_NO_TMR0)                          //timer0中断服务程序
 {
-	SOF_Count ++;
     mTimer_x_SetData(0,1000);                                                  //非自动重载方式需重新给TH0和TL0赋值,1MHz/1000=1000Hz, 1ms
+    SOF_Count ++;
+	if(Modem_Count)
+		Modem_Count --;
+    if(Modem_Count == 1)
+    {
+	    if(soft_dtr == 0 && soft_rts == 1)
+		{
+			INTF1_RTS = 1;
+			INTF1_DTR = 0;
+		}
+		if(soft_dtr == 1 && soft_rts == 0)
+		{
+			INTF1_RTS = 0;
+			INTF1_DTR = 1;
+		}
+		if(soft_dtr == soft_rts)
+		{
+			INTF1_DTR = 1;
+			INTF1_RTS = 0;
+			INTF1_RTS = 1;
+		}
+	}
 }
 
 void init_timer() {
